@@ -11,15 +11,9 @@ namespace UnixV6FsTools.LowLevel
     {
         public int BlocksForInodes { get; set; }
         public int VolumeSizeInBlocks { get; set; }
-        public List<int> FreeBlocks { get; set; }
         public DateTime LastModified { get; set; }
 
         public int InodeCount { get { return BlocksForInodes * FileSystem.BLOCK_SIZE / Inode.INODE_SIZE; } }
-
-        public SuperBlock()
-        {
-            FreeBlocks = new List<int>();
-        }
 
         public static SuperBlock Create(BinaryReader stream)
         {
@@ -28,12 +22,9 @@ namespace UnixV6FsTools.LowLevel
             sb.BlocksForInodes = stream.ReadInt16(); //isize
             sb.VolumeSizeInBlocks = stream.ReadInt16(); //fsize
 
-            int nfree = stream.ReadInt16(); //nfree
-            for (int i = 0; i < nfree; i++)
-                sb.FreeBlocks.Add(stream.ReadInt16()); //free[100]
-
-            //there are always 100 blocks on disk, some might be invalid, skip those
-            stream.BaseStream.Seek((100 - nfree) * 2, SeekOrigin.Current);
+            stream.ReadInt16(); //nfree
+            for (int i = 0; i < 100; i++)
+                stream.ReadInt16(); //free[100], ignored
 
             stream.ReadInt16(); //ninode
             for (int i = 0; i < 100; i++)
@@ -47,8 +38,9 @@ namespace UnixV6FsTools.LowLevel
             int time = stream.ReadInt32(); //time[2]
             sb.LastModified = new DateTime(1970, 1, 1).AddSeconds(time);
 
-            //pad[50], ignored
-            stream.BaseStream.Seek(50 * 2, SeekOrigin.Current);
+            //this is a bit weired: in the original source code, this is pad[50], but this only give a total of
+            //466 bytes (which is not a problem in UNIX). We just seek to block 2 to avoid any problems.
+            stream.BaseStream.Seek(2 * FileSystem.BLOCK_SIZE, SeekOrigin.Begin);
 
             return sb;
         }

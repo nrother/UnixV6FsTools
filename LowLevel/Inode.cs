@@ -53,6 +53,11 @@ namespace UnixV6FsTools.LowLevel
         public DateTime AccessTime { get; set; }
         public DateTime LastModified { get; set; }
 
+        public Inode()
+        {
+            Blocks = new int[BLOCK_COUNT];
+        }
+
         public static Inode Create(BinaryReader stream)
         {
             var inode = new Inode();
@@ -63,9 +68,9 @@ namespace UnixV6FsTools.LowLevel
             inode.Permissions = (Permissions)(mode & 0777); //mask out non-permission bits
             inode.FileType = (FileType)(mode & 060000); //s.a.
             inode.IsLarge = (mode & LARGE_FLAG) != 0;
-            inode.LinkCount = stream.ReadInt16(); //nlink
-            inode.UserId = stream.ReadInt16(); //uid
-            inode.GroupId = stream.ReadInt16(); //gid
+            inode.LinkCount = stream.ReadByte(); //nlink
+            inode.UserId = stream.ReadByte(); //uid
+            inode.GroupId = stream.ReadByte(); //gid
             inode.Size = stream.ReadByte() << 16 | stream.ReadUInt16(); //yeah, 24-bit unsigned integer
 
             for (int i = 0; i < BLOCK_COUNT; i++)

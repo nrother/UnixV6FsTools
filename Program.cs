@@ -22,10 +22,10 @@ namespace UnixV6FsTools
                 Console.WriteLine("\tpack - pack a image from the specified path");
             }
 
-            switch (args[1])
+            switch (args[0])
             {
                 case "unpack":
-                    unpack(args[2], args[3]);
+                    unpack(args[1], args[2]);
                     break;
                 case "pack":
                     Console.WriteLine("Not yet implemented...");
