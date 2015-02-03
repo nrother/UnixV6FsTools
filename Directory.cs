@@ -31,6 +31,9 @@ namespace UnixV6FsTools
             Entries.Clear();
             foreach (var entry in ReadDirEntries())
             {
+                if (entry.Item2 == "." || entry.Item2 == "..")
+                    continue; //we don't want recursive links in here
+
                 Entries.Add(new DirectoryEntry()
                 {
                     File = File.Create(stream, inodes, entry.Item1),
@@ -43,13 +46,13 @@ namespace UnixV6FsTools
         {
             for (int i = 0; i < Size; i += DIRECTORY_ENTRY_SIZE)
             {
-                int inode = (Content[i] << 8) | Content[i + 1];
+                int inode = (Content[i + 1] << 8) | Content[i];
                 if (inode == 0)
                     continue;
                 StringBuilder name = new StringBuilder(MAX_NAME_LENGTH);
                 for (int j = 0; j < MAX_NAME_LENGTH; j++) //read the name, might be terminated by \0
                 {
-                    int c = Content[2 + j];
+                    int c = Content[i + 2 + j];
                     if (c == 0)
                         break;
                     name.Append((char)c);

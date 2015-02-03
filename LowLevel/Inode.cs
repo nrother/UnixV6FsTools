@@ -76,8 +76,8 @@ namespace UnixV6FsTools.LowLevel
             for (int i = 0; i < BLOCK_COUNT; i++)
                 inode.Blocks[i] = stream.ReadInt16(); //addr[8]
 
-            int actime = stream.ReadInt32(); //actime[2]
-            int modtime = stream.ReadInt32(); //modtime[2]
+            uint actime = stream.ReadUInt32(); //actime[2]
+            uint modtime = stream.ReadUInt32(); //modtime[2]
             inode.AccessTime = new DateTime(1970, 1, 1).AddSeconds(actime);
             inode.LastModified = new DateTime(1970, 1, 1).AddSeconds(mode);
 

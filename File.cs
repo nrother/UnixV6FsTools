@@ -62,7 +62,10 @@ namespace UnixV6FsTools
         public static File Create(Stream stream, Inode[] inodes, int inodeNum)
         {
             Inode inode = inodes[inodeNum];
-            
+
+            if (!inode.IsAllocated)
+                throw new Exception("Trying to create file of unallocated inode!");
+
             File file;
 
             switch (inode.FileType)
@@ -96,7 +99,7 @@ namespace UnixV6FsTools
 
                 special.MajorDeviceId = (byte)(inode.Blocks[0] >> 8); //upper byte
                 special.MinorDeviceId = (byte)(inode.Blocks[0]); //lower byte
-                special.Type = (inode.Permissions.HasFlag(FileType.BlockSpecial)) ? SpecialFileType.Block : SpecialFileType.Char; //note the encoding in FileType!
+                special.Type = (((int)inode.Permissions & (int)FileType.BlockSpecial) != 0) ? SpecialFileType.Block : SpecialFileType.Char; //note the encoding in FileType!
             }
             else // regular file or directory, copy content
             {
