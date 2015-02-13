@@ -91,6 +91,9 @@ namespace UnixV6FsTools
             file.GroupPermissions = (Permissions)((int)inode.Permissions >> 3 & 0x7);
             file.UserPermissions = (Permissions)((int)inode.Permissions >> 0 & 0x7);
             file.SpecialPermission = (SpecialPermissions)(((int)inode.Permissions >> 10) & 0x3);
+            file.AccessTime = inode.AccessTime;
+            file.LastModified = inode.LastModified;
+            file.LinkCount = inode.LinkCount;
 
             if (file.IsSpecial) //special file, content is not relevant, but minor/major device id is in the first block number
             {
