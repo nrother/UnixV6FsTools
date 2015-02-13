@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using IO = System.IO;
+using System.CodeDom.Compiler;
 
 namespace UnixV6FsTools
 {
@@ -11,28 +13,10 @@ namespace UnixV6FsTools
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("UNIX V6 Filesystem Tools by Niklas Rother");
-
-            if (args.Length != 3)
+            foreach (var file in IO.Directory.GetFiles("Images", "*.dsk"))
             {
-                Console.WriteLine("Usage: unixv6fstools.exe MODE image path");
-                Console.WriteLine();
-                Console.WriteLine("Where MODE is:");
-                Console.WriteLine("\tunpack - unpack the image to the specified path");
-                Console.WriteLine("\tpack - pack a image from the specified path");
-            }
-
-            switch (args[0])
-            {
-                case "unpack":
-                    unpack(args[1], args[2]);
-                    break;
-                case "pack":
-                    Console.WriteLine("Not yet implemented...");
-                    break;
-                default:
-                    Console.WriteLine("Unknown mode.");
-                    break;
+                Console.WriteLine("Unpacking {0}...", file);
+                unpack(file, file + "_unpack");
             }
         }
 
@@ -42,13 +26,88 @@ namespace UnixV6FsTools
 
             //read the complete file system to memory
             var fs = FileSystem.Create(new FileStream(imageFile, FileMode.Open));
+            PrintTree(fs.RootDirectory, new IndentedTextWriter(Console.Out));
 
-            //...
+
             DirectoryInfo targetDir = new DirectoryInfo(targetPath);
             if (targetDir.Exists) //kill directory if exists
                 targetDir.Delete(true);
 
             targetDir.Create();
+
+            IO.File.WriteAllBytes(Path.Combine(targetDir.FullName, "block0.bin"), fs.BootBlock);
+            unpackDir(fs.RootDirectory, targetDir);
+        }
+
+        static void unpackDir(Directory dir, DirectoryInfo target)
+        {
+            foreach (var entry in dir.Entries)
+            {
+                if (entry.File.IsDirectory)
+                {
+                    var newDir = target.CreateSubdirectory(entry.Name);
+                    unpackDir((Directory)entry.File, newDir);
+                }
+                else if (entry.File.IsSpecial)
+                {
+                    var special = (SpecialFile)entry.File;
+                    string specialType;
+                    switch (special.Type)
+                    {
+                        case SpecialFileType.Char:
+                            specialType = "CharSpecial";
+                            break;
+                        case SpecialFileType.Block:
+                            specialType = "BlockSpecial";
+                            break;
+                        default:
+                            specialType = "???";
+                            break;
+                    }
+                    IO.File.WriteAllText(Path.Combine(target.FullName, entry.Name),
+                        string.Format("{0} {1}/{2}", specialType, special.MajorDeviceId, special.MinorDeviceId));
+                }
+                else
+                {
+                    IO.File.WriteAllBytes(Path.Combine(target.FullName, entry.Name), entry.File.Content);
+                }
+            }
+        }
+
+        static void PrintTree(Directory dir, IndentedTextWriter writer)
+        {
+            foreach (var entry in dir.Entries)
+            {
+                writer.WriteLine(entry.Name);
+                writer.Indent++;
+                if (entry.File.IsDirectory)
+                {
+                    PrintTree((Directory)entry.File, writer);
+                }
+                else if (entry.File.IsSpecial)
+                {
+                    var special = (SpecialFile)entry.File;
+                    string specialType;
+                    switch (special.Type)
+                    {
+                        case SpecialFileType.Char:
+                            specialType = "CharSpecial";
+                            break;
+                        case SpecialFileType.Block:
+                            specialType = "BlockSpecial";
+                            break;
+                        default:
+                            specialType = "???";
+                            break;
+                    }
+                    writer.WriteLine("{0} {1}/{2}", specialType, special.MajorDeviceId, special.MinorDeviceId);
+                }
+                else
+                {
+                    //nothing, name is enough
+                }
+                writer.Indent--;
+            }
         }
     }
 }

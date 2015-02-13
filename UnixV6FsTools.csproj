@@ -52,10 +52,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Images\unix0_v6_rk.dsk" />
-    <None Include="Images\unix1_v6_rk.dsk" />
-    <None Include="Images\unix2_v6_rk.dsk" />
-    <None Include="Images\unix3_v6_rk.dsk" />
+    <None Include="Images\unix0_v6_rk.dsk">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Images\unix1_v6_rk.dsk">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Images\unix2_v6_rk.dsk">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Images\unix3_v6_rk.dsk">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
