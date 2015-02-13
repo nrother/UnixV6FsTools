@@ -61,7 +61,7 @@ namespace UnixV6FsTools
         /// <param name="inodeNum">The index of the inode contaning the metadata for the file to create.</param>
         public static File Create(Stream stream, Inode[] inodes, int inodeNum)
         {
-            Inode inode = inodes[inodeNum];
+            Inode inode = inodes[inodeNum - 1]; //for some strange reasone Inode number start at 1, so fix this here
 
             if (!inode.IsAllocated)
                 throw new Exception("Trying to create file of unallocated inode!");

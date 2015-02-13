@@ -12,7 +12,7 @@ namespace UnixV6FsTools
     {
         public const int BLOCK_SIZE = 512; //512bytes per block
 
-        private const int ROOT_INODE = 0;
+        private const int ROOT_INODE = 1;
 
         public SuperBlock SuperBlock { get; set; }
         public byte[] BootBlock { get; set; }
